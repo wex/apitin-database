@@ -135,8 +135,11 @@ abstract class Record
     public function reload()
     {
         $primaryKey = static::getPrimaryKey();
+        $instance = static::load(intval($this->$primaryKey));
 
-        return static::load(intval($this->$primaryKey));
+        $this->store = $instance->store;
+
+        return $this;
     }
 
     /**
