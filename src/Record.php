@@ -50,13 +50,22 @@ abstract class Record
 
     public function __set(string $key, $value): void
     {
+        $fields = static::describe();
+
         $this->dirty[$key] = $this->store[$key] ?? null;
-        $this->store[$key] = $value;
+        $this->store[$key] = isset($fields[$key]) ?
+            $fields[$key]->to($value) :
+            $value;
     }
 
     public function __get(string $key): mixed
     {
-        return $this->store[$key] ?? null;
+        $fields = static::describe();
+        $value = $this->store[$key] ?? null;
+
+        return isset($fields[$key]) ?
+            $fields[$key]->from($value) :
+            $value;
     }
 
     public function hasChanged(): bool
@@ -95,6 +104,10 @@ abstract class Record
     {
         $select = new Select(static::getTable());
         $select->setClass(static::class);
+
+        if (static::useSoftDelete()) {
+            $select->where('deleted_at IS NULL OR deleted_at >= NOW()');
+        }
 
         return $select;
     }
@@ -143,10 +156,16 @@ abstract class Record
                 $data[$field->name] = $this->store[$field->name] ?? $field->default;
             }
 
+            if (!$data) return $this;
+
+            if (static::hasTimestamps()) {
+                $data['updated_at'] = date('Y-m-d H:i:s');
+            }
+
             static::$db->update(
                 $this->getTable(),
                 $data,
-                [$this->getPrimaryKey() => $this->$primaryKey]
+                [$primaryKey => $this->$primaryKey]
             );
 
         } else {
@@ -154,6 +173,12 @@ abstract class Record
             $data = [];
             foreach (static::describe() as $field) {
                 $data[$field->name] = $this->store[$field->name] ?? $field->default;
+            }
+
+            if (!$data) return $this;
+
+            if (static::hasTimestamps()) {
+                $data['created_at'] = date('Y-m-d H:i:s');
             }
 
             $this->$primaryKey = static::$db->insert(
@@ -164,5 +189,30 @@ abstract class Record
         }
 
         return $this->reload();
+    }
+
+    /**
+     * @return bool
+     */
+    public function destroy()
+    {
+        $primaryKey = static::getPrimaryKey();
+
+        if (static::useSoftDelete()) {
+
+            return !!static::$db->update(
+                static::getTable(),
+                ['deleted_at' => date('Y-m-d H:i:s')],
+                [$primaryKey => $this->$primaryKey]
+            );
+
+        } else {
+
+            return !!static::$db->delete(
+                static::getTable(),
+                [$primaryKey => $this->$primaryKey]
+            );
+
+        }
     }
 }

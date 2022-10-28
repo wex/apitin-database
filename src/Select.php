@@ -199,13 +199,13 @@ class Select
             implode("\n", $parts[static::PART_JOIN]),
 
             count($parts[static::PART_WHERE]) ? "\nWHERE\n\t" : '',
-            implode(" AND\n\t", $parts[static::PART_WHERE]),
+            implode(" AND\n\t", array_map(function($t) { return "({$t})"; }, $parts[static::PART_WHERE])),
 
             count($parts[static::PART_GROUP]) ? "\nGROUP BY\n\t" : '',
             implode(', ', $parts[static::PART_GROUP]),
 
             count($parts[static::PART_HAVING]) ? "\nHAVING\n\t" : '',
-            implode(" AND\n\t", $parts[static::PART_HAVING]),
+            implode(" AND\n\t", array_map(function($t) { return "({$t})"; }, $parts[static::PART_HAVING])),
 
             count($parts[static::PART_ORDER]) ? "\nORDER BY\n\t" : '',
             implode(", ", $parts[static::PART_ORDER]),

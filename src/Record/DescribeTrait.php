@@ -8,6 +8,9 @@ trait DescribeTrait
 {
     use CacheTrait;
 
+    /**
+     * @return string
+     */
     public static function getTable()
     {
         return static::cached('table', function() {
@@ -16,11 +19,36 @@ trait DescribeTrait
         });
     }
 
+    /**
+     * @return string
+     */
     public static function getPrimaryKey()
     {
         return static::cached('primaryKey', function() {
             $ref = new ReflectionClass(static::class);
             return $ref->getAttributes(Table::class)[0]->newInstance()->primaryKey;
+        });
+    }
+
+    /**
+     * @return bool
+     */
+    public static function hasTimestamps()
+    {
+        return static::cached('timeStamps', function() {
+            $ref = new ReflectionClass(static::class);
+            return $ref->getAttributes(Table::class)[0]->newInstance()->timeStamps;
+        });
+    }
+
+    /**
+     * @return string
+     */
+    public static function useSoftDelete()
+    {
+        return static::cached('softDelete', function() {
+            $ref = new ReflectionClass(static::class);
+            return $ref->getAttributes(Table::class)[0]->newInstance()->softDelete;
         });
     }
 

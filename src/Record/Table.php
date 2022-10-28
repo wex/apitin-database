@@ -9,7 +9,9 @@ class Table
 {
     public function __construct(
         public string $name,
-        public string $primaryKey = 'id'
+        public string $primaryKey = 'id',
+        public bool $timeStamps = false,
+        public bool $softDelete = false
     )
     {
         
