@@ -3,7 +3,8 @@
 namespace Apitin\Database\Record;
 
 use Apitin\Database\Select as DatabaseSelect;
-use BadFunctionCallException;
+use PDOException;
+use LengthException;
 use stdClass;
 
 class Select extends DatabaseSelect
@@ -18,6 +19,14 @@ class Select extends DatabaseSelect
     }
 
     /**
+     * @return array 
+     */
+    public function firstAsArray()
+    {
+        return parent::first();
+    }
+
+    /**
      * @return stdClass|$returnAs
      */
     public function first()
@@ -25,6 +34,14 @@ class Select extends DatabaseSelect
         $class = is_null($this->returnAs) ? stdClass::class : $this->returnAs;
 
         return new $class(parent::first());
+    }
+
+    /**
+     * @return array 
+     */
+    public function allAsArray()
+    {
+        return parent::all();
     }
 
     /**

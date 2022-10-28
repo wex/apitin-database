@@ -5,6 +5,10 @@ namespace Apitin\Database;
 use Apitin\Database\Record\DescribeTrait;
 use Apitin\Database\Record\Select;
 use Apitin\Database\Select as DatabaseSelect;
+use stdClass;
+use PDOException;
+use LengthException;
+use LogicException;
 
 abstract class Record
 {
@@ -40,7 +44,7 @@ abstract class Record
     public function __construct(array $kvp = [])
     {
         foreach (static::describe() as $k => $meta) {
-            $this->store[$k] = $meta['default'];
+            $this->store[$k] = $meta->default;
         }
 
         foreach ($kvp as $k => $v) {
@@ -82,18 +86,87 @@ abstract class Record
         return $instance;
     }
 
-    public function set(array $kvp): void
+    public function set(array $kvp): static
     {
         foreach ($kvp as $k => $v) {
             $this->$k = $v;
         }
+
+        return $this;
     }
 
-    public static function select()
+    public static function select(): Select
     {
         $select = new Select(static::getTable());
         $select->setClass(static::class);
 
         return $select;
+    }
+
+    /**
+     * @return static
+     */
+    public static function load(int $primaryKeyValue)
+    {
+        $select = static::select();
+        $select->where(
+            sprintf('%s.%s = ?',
+                static::getTable(),
+                static::getPrimaryKey()
+            ),
+            $primaryKeyValue
+        );
+
+        return $select->first();
+    }
+
+    /**
+     * @return static
+     */
+    public function reload()
+    {
+        $primaryKey = static::getPrimaryKey();
+
+        return static::load(intval($this->$primaryKey));
+    }
+
+    /**
+     * @return static
+     */
+    public function save()
+    {
+        if (!$this->hasChanged()) return $this;
+
+        $primaryKey = static::getPrimaryKey();
+
+        if ($this->$primaryKey) {
+
+            $data = [];
+            foreach (static::describe() as $field) {
+                if (!isset($this->dirty[$field->name])) continue;
+                $data[$field->name] = $this->store[$field->name] ?? $field->default;
+            }
+
+            static::$db->update(
+                $this->getTable(),
+                $data,
+                [$this->getPrimaryKey() => $this->$primaryKey]
+            );
+
+        } else {
+
+            $data = [];
+            foreach (static::describe() as $field) {
+                $data[$field->name] = $this->store[$field->name] ?? $field->default;
+            }
+
+            $this->$primaryKey = static::$db->insert(
+                $this->getTable(),
+                $data
+            );
+
+        }
+
+        return $this->reload();
     }
 }

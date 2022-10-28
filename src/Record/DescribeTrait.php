@@ -24,27 +24,23 @@ trait DescribeTrait
         });
     }
 
+    /**
+     * @return Column[]
+     */
     public static function describe()
     {
         return static::cached('columns', function() {
             $ref = new ReflectionClass(static::class);
             $columns = [];
             $primaryKey = static::getPrimaryKey();
-            $columns[$primaryKey] = [
-                'type'      => Column::TYPE_INTEGER,
-                'default'   => null,
-                'required'  => false,
-                'column'    => new Column($primaryKey, Column::TYPE_INTEGER, false, null),
-            ];
+
+            $columns[$primaryKey] = new Column($primaryKey, Column::TYPE_INTEGER, false, null);
+
             foreach ($ref->getAttributes(Column::class) as $attr) {
                 $t = $attr->newInstance();
-                $columns[$t->name] = [
-                    'type'      => $t->type,
-                    'default'   => $t->default,
-                    'required'  => $t->required,
-                    'column'    => $t,
-                ];
+                $columns[$t->name] = $t;
             }
+
             return $columns;
         });
     }

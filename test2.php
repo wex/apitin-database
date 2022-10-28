@@ -10,30 +10,23 @@ ini_set('display_errors', 1);
 
 require_once 'vendor/autoload.php';
 
-$db = new Database('mysql:host=turku.dev;dbname=example', 'wstuotanto', 'wstuotanto');
+$db = new Database('mysql:host=turku.dev;dbname=niko', 'wstuotanto', 'wstuotanto');
 Record::setDatabase($db);
 
-
-#[Table("lastnames")]
-#[Column("col1", default: "Column 1")]
-#[Column("is_active", default: false, type: Column::TYPE_BOOLEAN)]
+#[Table("foo")]
+#[Column("name")]
 class Foo extends Record
 {
 
 }
-
+/*
 $t = new Foo;
-$t->bar = true;
-
+$t->name = "Bar";
 var_dump( $t );
 
-$select = Foo::select()->where('`value` LIKE ?', 'Huj%');
+var_dump( $t->save() );
+*/
 
-echo "{$select}\n";
-
-$start = microtime(true);
-
-$data = $select->all();
-
-printf("Took %.2f seconds\n", microtime(true) - $start);
-print_r( $data );
+$t = Foo::load(3);
+$t->name = 'Faa';
+var_dump( $t->save() );

@@ -21,7 +21,16 @@ abstract class Part implements IPart
 
     public function quoteValue($value): string
     {
-        return static::$db->quote($value);
+        if (is_array($value)) {
+            return implode(', ', array_map(
+                function($t) {
+                    return $this->quoteValue($t);
+                },
+                $value
+            ));
+        }
+
+        return static::$db->quote((string) $value);
 
         /**
          * @todo FIX THIS - this is ugly way to do it.
