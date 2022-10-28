@@ -26,6 +26,10 @@ class Select
      */
     protected array $parts = [];
 
+    /**
+     * @param string|array $table Table name as string or [tableName => alias]
+     * @param array $columns Array of selected columns
+     */
     public function __construct(string|array $table, array $columns = ['*'])
     {
         if (is_array($table)) {
@@ -39,6 +43,10 @@ class Select
         }
     }
 
+    /**
+     * @param string|array $table Table name as string or [tableName => alias]
+     * @param array $columns Array of selected columns
+     */
     public function from(string|array $table, array $columns = ['*']): static
     {
         if (is_array($table)) {
@@ -54,6 +62,9 @@ class Select
         return $this;
     }
 
+    /**
+     * @param array $columns Array of selected columns
+     */
     public function columns(array $columns): static
     {
         foreach ($columns as $k => $t) {
@@ -72,7 +83,12 @@ class Select
         return $this;
     }
 
-    public function join(string|array $table, array $on, array $columns = ['*']): static
+    /**
+     * @param string|array $table Table name as string or [tableName => alias]
+     * @param array $on Join rules as string or in array as where -format ('foo = ?', 'bar')
+     * @param array $columns Array of selected columns
+     */
+    public function join(string|array $table, string|array $on, array $columns = ['*']): static
     {
         if (is_array($table)) {
 
@@ -87,7 +103,12 @@ class Select
         return $this;
     }
 
-    public function joinLeft(string|array $table, array|string $on, array $columns = ['*']): static
+    /**
+     * @param string|array $table Table name as string or [tableName => alias]
+     * @param array $on Join rules as string or in array as where -format ('foo = ?', 'bar')
+     * @param array $columns Array of selected columns
+     */
+    public function joinLeft(string|array $table, string|array $on, array $columns = ['*']): static
     {
         if (is_array($table)) {
 
@@ -102,17 +123,32 @@ class Select
         return $this;
     }
 
-    public function where(string $expression, $value = null)
+    /**
+     * @param string $expression Expression - if ? given, value will be quoted and replaced there
+     * @param mixed $value Optional value for expression
+     */
+    public function where(string $expression, $value = null): static
     {
         $this->parts[] = new Where($expression, $value);
+
+        return $this;
     }
 
-    public function having(string $expression, $value = null)
+    /**
+     * @param string $expression Expression - if ? given, value will be quoted and replaced there
+     * @param mixed $value Optional value for expression
+     */
+    public function having(string $expression, $value = null): static
     {
         $this->parts[] = new Having($expression, $value);
+
+        return $this;
     }
 
-    public function toSql()
+    /**
+     * @return string SQL string
+     */
+    public function toSql(): string
     {
         $partMap = [
             static::PART_EXPRESSION => 'toExpression',
@@ -165,9 +201,39 @@ class Select
 
         );
         
-        echo $sql;
+        return $sql;
+    }
 
-        #print_r( $parts );
+    /**
+     * @return string 
+     */
+    public function __toString()
+    {
+        return $this->toSql();
+    }
+
+    /**
+     * @return array First record found by select
+     */
+    public function first()
+    {
+
+    }
+
+    /**
+     * @return array[array] All records found by select
+     */
+    public function all()
+    {
+
+    }
+
+    /**
+     * @return mixed First record's first column found by select
+     */
+    public function column()
+    {
+
     }
 
 }
