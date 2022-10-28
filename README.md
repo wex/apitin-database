@@ -30,6 +30,9 @@ class User extends Apitin\Database\Record
 Table(string $tableName, string $primaryKey = 'id', bool $timeStamps = false, bool $softDelete = false)
 ``` 
 
+- If `$timeStamps` is true, you also need columns `created_at` and `updated_at`.
+- If `$softDelete` is true, you need column `deleted_at`.
+
 ### Column()
 ```php
 Column(string $name, string $type = Column::TYPE_STRING, bool $required = false, mixed $default = null)
