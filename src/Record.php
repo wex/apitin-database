@@ -4,9 +4,15 @@ namespace Apitin\Database;
 
 use Apitin\Database\Record\DescribeTrait;
 use Apitin\Database\Record\Select;
+use Apitin\Database\Select as DatabaseSelect;
 
 abstract class Record
 {
+    /**
+     * @var Database
+     */
+    protected static Database $db;
+
     /**
      * @var mixed[]
      */
@@ -22,6 +28,15 @@ abstract class Record
      */ 
     use DescribeTrait;
     
+    /**
+     * @param Database $db 
+     */
+    public static function setDatabase(Database $db)
+    {
+        static::$db = $db;
+        DatabaseSelect::setDatabase($db);
+    }
+
     public function __construct(array $kvp = [])
     {
         foreach (static::describe() as $k => $meta) {

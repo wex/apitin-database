@@ -6,8 +6,23 @@ use Apitin\Database\Database;
 
 abstract class Part implements IPart
 {
+    /**
+     * @var Database
+     */
+    protected static Database $db;
+
+    /**
+     * @param Database $db 
+     */
+    public static function setDatabase(Database $db)
+    {
+        static::$db = $db;
+    }
+
     public function quoteValue($value): string
     {
+        return static::$db->quote($value);
+
         /**
          * @todo FIX THIS - this is ugly way to do it.
          */

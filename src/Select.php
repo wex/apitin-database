@@ -22,9 +22,23 @@ class Select
     const PART_LIMIT        = 'limits';
 
     /**
+     * @var Database
+     */
+    protected static Database $db;
+
+    /**
      * @var Part[]
      */
     protected array $parts = [];
+
+    /**
+     * @param Database $db 
+     */
+    public static function setDatabase(Database $db)
+    {
+        static::$db = $db;
+        Part::setDatabase($db);
+    }
 
     /**
      * @param string|array $table Table name as string or [tableName => alias]
@@ -217,7 +231,9 @@ class Select
      */
     public function first()
     {
-
+        return static::$db->first(
+            $this->toSql()
+        );
     }
 
     /**
@@ -225,7 +241,9 @@ class Select
      */
     public function all()
     {
-
+        return static::$db->all(
+            $this->toSql()
+        );
     }
 
     /**
@@ -233,7 +251,9 @@ class Select
      */
     public function column()
     {
-
+        return static::$db->one(
+            $this->toSql()
+        );
     }
 
 }
