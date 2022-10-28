@@ -19,14 +19,10 @@ class Foo extends Record
 {
 
 }
-/*
+
 $t = new Foo;
+var_dump( $t );
 $t->name = "Bar";
 var_dump( $t );
 
-var_dump( $t->save() );
-*/
-
-$t = Foo::load(3);
-$t->name = 'Faa';
 var_dump( $t->save() );

@@ -5,10 +5,6 @@ namespace Apitin\Database;
 use Apitin\Database\Record\DescribeTrait;
 use Apitin\Database\Record\Select;
 use Apitin\Database\Select as DatabaseSelect;
-use stdClass;
-use PDOException;
-use LengthException;
-use LogicException;
 
 abstract class Record
 {
