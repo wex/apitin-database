@@ -3,8 +3,10 @@
 namespace Apitin\Database;
 
 use Apitin\Database\Record\DescribeTrait;
+use Apitin\Database\Record\EventTrait;
 use Apitin\Database\Record\Select;
 use Apitin\Database\Select as DatabaseSelect;
+use Closure;
 
 abstract class Record
 {
@@ -27,6 +29,11 @@ abstract class Record
      * Get attribute describers
      */ 
     use DescribeTrait;
+
+    /**
+     * Record events
+     */
+    use EventTrait;
     
     /**
      * @param Database $db 
@@ -46,11 +53,19 @@ abstract class Record
         foreach ($kvp as $k => $v) {
             $this->store[$k] = $v;
         }
+
+        foreach (static::onLoad() as $callback) {
+            Closure::fromCallable($callback)->call($this, $this);
+        }
     }
 
     public function __set(string $key, $value): void
     {
-        $fields = static::describe();
+        $fields     = static::describe();
+
+        foreach (static::onSet($key) as $callback) {
+            $value = Closure::fromCallable($callback)->call($this, $this, $value);
+        }
 
         $this->dirty[$key] = $this->store[$key] ?? null;
         $this->store[$key] = isset($fields[$key]) ?
@@ -60,8 +75,12 @@ abstract class Record
 
     public function __get(string $key): mixed
     {
-        $fields = static::describe();
-        $value = $this->store[$key] ?? null;
+        $fields     = static::describe();
+        $value      = $this->store[$key] ?? null;
+
+        foreach (static::onGet($key) as $callback) {
+            $value = Closure::fromCallable($callback)->call($this, $this);
+        }
 
         return isset($fields[$key]) ?
             $fields[$key]->from($value) :
@@ -155,7 +174,7 @@ abstract class Record
 
             $data = [];
             foreach (static::describe() as $field) {
-                if (!isset($this->dirty[$field->name])) continue;
+                if (!array_key_exists($field->name, $this->dirty)) continue;
                 $data[$field->name] = $this->store[$field->name] ?? $field->default;
             }
 

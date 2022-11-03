@@ -2,7 +2,12 @@
 
 namespace Apitin\Database\Record;
 
+use Apitin\Database\Record;
+use BadMethodCallException;
+use LogicException;
+use ReflectionAttribute;
 use ReflectionClass;
+use ReflectionProperty;
 
 trait DescribeTrait
 {
@@ -58,15 +63,50 @@ trait DescribeTrait
     public static function describe()
     {
         return static::cached('columns', function() {
-            $ref = new ReflectionClass(static::class);
-            $columns = [];
+            $refClass   = new ReflectionClass(static::class);
+            $columns    = [];
             $primaryKey = static::getPrimaryKey();
 
+            /**
+             * Primary Key
+             */
             $columns[$primaryKey] = new Column($primaryKey, Column::TYPE_INTEGER, false, null);
 
-            foreach ($ref->getAttributes(Column::class) as $attr) {
-                $t = $attr->newInstance();
-                $columns[$t->name] = $t;
+            /**
+             * Other fields
+             */
+            foreach ($refClass->getProperties(ReflectionProperty::IS_PROTECTED) as $refProp) {
+                foreach ($refProp->getAttributes(ColumnAttribute::class, ReflectionAttribute::IS_INSTANCEOF) as $propAttr) {
+                    $attr = $propAttr->newInstance();
+                    
+                    switch ($attr::class) {
+
+                        case Column::class:
+                            $columns[ $attr->name ] = $attr;
+                            $attr->bind($attr, $refProp->getName(), static::class);
+                            break;
+
+                        case Relation::class:
+                            $columns[ $attr->name ] = new Column($attr->name, Column::TYPE_FOREIGNKEY);
+                            $columns[ $refProp->getName() ] = new Column($attr->name, Column::TYPE_VIRTUAL);
+                            $attr->bind($attr, $refProp->getName(), static::class);
+                            break;
+
+                        case Collection::class:
+                            throw new LogicException("NOT IMPLEMENTED YET!");
+                            $columns[ $refProp->getName() ] = new Column($refProp->getName(), Column::TYPE_TEXT); 
+                            $attr->bind($attr, $refProp->getName(), static::class);
+                            break;
+
+                        default:
+                            throw new BadMethodCallException(sprintf(
+                                "Unknown column attribute: '%s'",
+                                $attr::class
+                            ));
+                    }
+
+
+                }
             }
 
             return $columns;
