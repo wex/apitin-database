@@ -31,30 +31,23 @@ class Foo extends Record
     #[Column("name")]
     protected $name;
 
-    /*
     #[Relation("bar_id", Bar::class)]
     protected $bar;
 
     #[Collection("foo_id", Bar::class)]
-    protected $bars;
-    */
+    protected $barz;
 
-    #[Store(Bar::class)]
+    #[Store(Record::class)]
     protected $bars;
 }
 
 #$bar = Bar::load(1);
-$foo = Foo::load(7);
+$foo = Foo::load(6);
 
-$foo->name = sprintf('%s %s', 'Foo Bar', microtime(true));
-
-$foo->bars[] = new Bar(['name' => 'Lapsukainen']);
-$foo->bars[] = new Bar(['name' => 'Lapsukainen']);
-
-print_r( $foo->bars[1] );
-
-
+#$foo->name = sprintf('%s %s', 'Foo Bar', microtime(true));
 #$foo->save();
+
+print_r( $foo );
 exit;
 
 ?>

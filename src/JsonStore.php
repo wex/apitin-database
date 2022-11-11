@@ -15,7 +15,7 @@ class JsonStore implements ArrayAccess, Iterator, Countable
     protected array  $store     = [];
     protected int    $iterator  = -1;
 
-    public function __construct(Record &$parent, string $column,  string $collects)
+    public function __construct(Record &$parent, string $column, string $collects)
     {
         $this->parent   = $parent;
         $this->column   = $column;
@@ -39,14 +39,14 @@ class JsonStore implements ArrayAccess, Iterator, Countable
 
     public function offsetGet(mixed $offset): mixed
     {
-        $object = $this->collects;
-
         if (!$this->offsetExists($offset)) {
             throw new BadMethodCallException(sprintf(
                 "Invalid offset: %s",
                 $offset
             ));
         }
+
+        $object = $this->store[$offset]['@type'];
 
         return $this->store[$offset] ?
             new $object($this->store[$offset]) :
@@ -62,7 +62,10 @@ class JsonStore implements ArrayAccess, Iterator, Countable
             ));
         }
 
-        $this->store[is_null($offset) ? count($this->store) : $offset] = $value->toArray();
+        $data = $value->toArray();
+        $data['@type'] = get_class($value);
+
+        $this->store[is_null($offset) ? count($this->store) : $offset] = $data;
         $this->parent->setDirty($this->column);
     }
 
