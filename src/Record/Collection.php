@@ -2,6 +2,7 @@
 
 namespace Apitin\Database\Record;
 
+use Apitin\Database\FixedCollection;
 use Attribute;
 use BadMethodCallException;
 use LogicException;
@@ -9,11 +10,14 @@ use LogicException;
 #[Attribute(Attribute::TARGET_PROPERTY | Attribute::IS_REPEATABLE)]
 class Collection extends ColumnAttribute
 {
+    const   TYPE_FIXED      = 'fixed';
+    const   TYPE_LAZY       = 'lazy';
     const   TYPE_JSON       = 'json';
 
     public function __construct(
+        public string $name,
         public string $instance,
-        public string $type = self::TYPE_JSON
+        public string $type = self::TYPE_FIXED
     )
     {
         
@@ -21,25 +25,16 @@ class Collection extends ColumnAttribute
 
     public function bind(ColumnAttribute $column, string $property, string $instance)
     {
-        $instance::onGet($property, function($instance) use ($property) {
-            $instance->$property = json_decode($instance->$property ?? '[]');
-        });
+        $relatedClass   = $this->instance;
+        $relatedTable   = $relatedClass::getTable();
+        $relatedKey     = $this->name;
+        $localPK        = $instance::getPrimaryKey();
 
-        $instance::onSet($property, function($instance, $value) use ($property) {
-            if (is_array($value)) {
-                $instance->$property = json_encode($value);
-            } else if (is_null($value)) {
-                $instance->$property = json_encode([]);
-            } else {
-                throw new BadMethodCallException(sprintf(
-                    "Expected array - got '%s'",
-                    gettype($value)
-                ));
-            }
-        });
-
-        $instance::onLoad(function($instance) use ($property) {
-            $instance->store[$property] = json_decode($instance->$property ?? '[]');
+        $instance::onLoad(function($instance) use ($property, $relatedClass, $relatedTable, $relatedKey, $localPK) {
+            $select = $relatedClass::select();
+            $select->where("{$relatedTable}.{$relatedKey} = ?", $instance->$localPK);
+            
+            $instance->store[$property] = new FixedCollection($instance, $select);
         });
     }
 }

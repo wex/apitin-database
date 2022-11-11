@@ -93,8 +93,7 @@ trait DescribeTrait
                             break;
 
                         case Collection::class:
-                            throw new LogicException("NOT IMPLEMENTED YET!");
-                            $columns[ $refProp->getName() ] = new Column($refProp->getName(), Column::TYPE_TEXT); 
+                            $columns[ $refProp->getName() ] = new Column($refProp->getName(), Column::TYPE_VIRTUAL); 
                             $attr->bind($attr, $refProp->getName(), static::class);
                             break;
 

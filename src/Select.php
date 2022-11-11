@@ -6,6 +6,7 @@ use Apitin\Database\Select\Expression;
 use Apitin\Database\Select\From;
 use Apitin\Database\Select\Having;
 use Apitin\Database\Select\Join;
+use Apitin\Database\Select\Limit;
 use Apitin\Database\Select\Part;
 use Apitin\Database\Select\Where;
 use Closure;
@@ -159,6 +160,17 @@ class Select
         return $this;
     }
 
+    public function limit(int $count, int $offset = 0)
+    {
+        foreach ($this->parts as $t) {
+            if ($t instanceof Limit) unset( $this->parts[$t] );
+        }
+
+        $this->parts[] = new Limit($count, $offset);
+
+        return $this;
+    }
+
     /**
      * @return string SQL string
      */
@@ -191,7 +203,7 @@ class Select
             $t = array_values(array_filter($t));
         }
 
-        $sql = sprintf("SELECT\n\t%s\nFROM\n\t%s %s%s %s%s",
+        $sql = sprintf("SELECT\n\t%s\nFROM\n\t%s %s%s %s%s %s%s %s%s %s%s %s%s",
             implode(', ', $parts[static::PART_EXPRESSION]),
             implode(', ', $parts[static::PART_TABLE]),
 
@@ -210,9 +222,8 @@ class Select
             count($parts[static::PART_ORDER]) ? "\nORDER BY\n\t" : '',
             implode(", ", $parts[static::PART_ORDER]),
 
-            count($parts[static::PART_LIMIT]) ? "\nLIMIT\n\t" : '',
+            count($parts[static::PART_LIMIT]) ? "\n\t" : '',
             implode("", $parts[static::PART_LIMIT]),
-
         );
         
         return $sql;

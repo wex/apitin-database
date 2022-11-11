@@ -87,6 +87,17 @@ abstract class Record
             $value;
     }
 
+    public function __call($name, $arguments): mixed
+    {
+        $fields     = static::describe();
+
+        foreach ($fields as $t) {
+            var_dump( $t );
+        }
+
+        return false;
+    }
+
     public function hasChanged(): bool
     {
         return !!count($this->dirty);
