@@ -48,6 +48,7 @@ abstract class Record
     {
         foreach (static::describe() as $k => $meta) {
             $this->store[$k] = $meta->default;
+            unset( $this->{$k} );
         }
 
         foreach ($kvp as $k => $v) {
@@ -98,6 +99,11 @@ abstract class Record
         return false;
     }
 
+    public function setDirty(string $column, mixed $previous = true)
+    {
+        $this->dirty[$column] = $previous;
+    }
+
     public function hasChanged(): bool
     {
         return !!count($this->dirty);
@@ -106,7 +112,7 @@ abstract class Record
     public function toArray(?array $keys = null): array
     {
         return is_null($keys) ?
-            $this->store :
+            array_filter($this->store) :
             array_intersect_key($this->store, $keys);
     }
 
@@ -178,6 +184,10 @@ abstract class Record
     public function save()
     {
         if (!$this->hasChanged()) return $this;
+
+        foreach (static::onSave() as $callback) {
+            Closure::fromCallable($callback)->call($this, $this);
+        }
 
         $primaryKey = static::getPrimaryKey();
 

@@ -97,6 +97,11 @@ trait DescribeTrait
                             $attr->bind($attr, $refProp->getName(), static::class);
                             break;
 
+                        case Store::class:
+                            $columns[ $refProp->getName() ] = new Column($refProp->getName(), Column::TYPE_TEXT);
+                            $attr->bind($attr, $refProp->getName(), static::class);
+                            break;
+
                         default:
                             throw new BadMethodCallException(sprintf(
                                 "Unknown column attribute: '%s'",

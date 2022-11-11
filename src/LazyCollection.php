@@ -8,6 +8,7 @@ use LogicException;
 class LazyCollection extends Collection
 {
     protected Record $parent;
+    protected string $column;
     protected Select $source;
     protected array  $cache     = [];
     protected int    $offset    = -1;
@@ -15,7 +16,7 @@ class LazyCollection extends Collection
     protected string $lastQuery = '';
     protected ?Record $lastRecord;
 
-    public function __construct(Record &$parent, Select $source)
+    public function __construct(Record &$parent, string $column, Select $source)
     {
         $this->parent   = $parent;
         $this->source   = $source;
@@ -59,6 +60,7 @@ class LazyCollection extends Collection
     public function offsetSet(mixed $offset, mixed $value): void
     {
         throw new LogicException('NOT IMPLEMENTED YET');
+        $this->parent->setDirty($this->column);
     }
 
     public function offsetUnset(mixed $offset): void

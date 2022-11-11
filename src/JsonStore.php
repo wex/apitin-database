@@ -2,25 +2,34 @@
 
 namespace Apitin\Database;
 
-class FixedCollection extends Collection
+use ArrayAccess;
+use BadMethodCallException;
+use Countable;
+use Iterator;
+
+class JsonStore implements ArrayAccess, Iterator, Countable
 {
     protected Record $parent;
     protected string $column;
-    protected Select $source;
+    protected string $collects;
     protected array  $store     = [];
     protected int    $iterator  = -1;
 
-    public function __construct(Record &$parent, string $column, Select $source)
+    public function __construct(Record &$parent, string $column,  string $collects)
     {
         $this->parent   = $parent;
-        $this->source   = $source;
+        $this->column   = $column;
+        $this->collects = $collects;
 
         $this->refresh();
     }
 
     public function refresh()
     {
-        $this->store = $this->source->all();
+        $column = $this->column;
+        $this->store = $this->parent->$column ?
+            json_decode($this->parent->$column, true) :
+            [];
     }
 
     public function offsetExists(mixed $offset): bool
@@ -30,12 +39,30 @@ class FixedCollection extends Collection
 
     public function offsetGet(mixed $offset): mixed
     {
-        return $this->store[$offset] ?? null;
+        $object = $this->collects;
+
+        if (!$this->offsetExists($offset)) {
+            throw new BadMethodCallException(sprintf(
+                "Invalid offset: %s",
+                $offset
+            ));
+        }
+
+        return $this->store[$offset] ?
+            new $object($this->store[$offset]) :
+            null;
     }
 
     public function offsetSet(mixed $offset, mixed $value): void
     {
-        $this->store[is_null($offset) ? count($this->store) : $offset] = $value;
+        if (!($value instanceof $this->collects)) {
+            throw new BadMethodCallException(sprintf(
+                "Invalid record for storage: '%s'",
+                get_class($value)
+            ));
+        }
+
+        $this->store[is_null($offset) ? count($this->store) : $offset] = $value->toArray();
         $this->parent->setDirty($this->column);
     }
 
@@ -76,6 +103,6 @@ class FixedCollection extends Collection
 
     public function save()
     {
-        die('todo');
+        return json_encode($this->store);
     }
 }
