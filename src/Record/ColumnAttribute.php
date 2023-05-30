@@ -4,7 +4,7 @@ namespace Apitin\Database\Record;
 
 use Attribute;
 
-#[Attribute(Attribute::TARGET_PROPERTY | Attribute::IS_REPEATABLE)]
+#[Attribute(Attribute::TARGET_PROPERTY)]
 abstract class ColumnAttribute
 {
     const   TYPE_STRING     = 'string';
@@ -21,7 +21,10 @@ abstract class ColumnAttribute
         public string $type = self::TYPE_STRING,
         public bool $required = false,
         public mixed $default = null,
-        public ?string $alias = null
+        public bool $unique = false,
+        public ?string $alias = null,
+        public mixed $min = null,
+        public mixed $max = null,
     )
     {
         

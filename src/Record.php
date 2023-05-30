@@ -5,6 +5,7 @@ namespace Apitin\Database;
 use Apitin\Database\Record\DescribeTrait;
 use Apitin\Database\Record\EventTrait;
 use Apitin\Database\Record\Select;
+use Apitin\Database\Record\Validator;
 use Apitin\Database\Select as DatabaseSelect;
 use Closure;
 
@@ -44,6 +45,11 @@ abstract class Record
         DatabaseSelect::setDatabase($db);
     }
 
+    public static function boot()
+    {
+
+    }
+
     public function __construct(array $kvp = [])
     {
         $aliasMap = [];
@@ -56,6 +62,10 @@ abstract class Record
 
         foreach ($kvp as $k => $v) {
             $this->store[$aliasMap[$k] ?? $k] = $v;
+        }
+
+        if (static::onBoot()) {
+            static::boot();
         }
 
         foreach (static::onLoad() as $callback) {
@@ -260,5 +270,17 @@ abstract class Record
             );
 
         }
+    }
+
+    /**
+     * @return true|Validator 
+     */
+    public function validate(array $skip = []): Validator|bool
+    {
+        $validator = new Validator($this);
+
+        if ($validator->validate($skip)) return true;
+
+        return $validator;
     }
 }

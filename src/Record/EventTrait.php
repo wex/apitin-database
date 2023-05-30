@@ -6,6 +6,17 @@ trait EventTrait
 {
     static $events = [];
 
+    public static function onBoot()
+    {
+        $cacheKey = sprintf('%s.boot', static::class);
+
+        if (!isset(static::$events[$cacheKey])) {
+            return static::$events[$cacheKey] = true;
+        }
+
+        return false;
+    }
+
     public static function onGet(string $key, callable $callback = null)
     {
         $cacheKey = sprintf("%s.get.%s", static::class, $key);
