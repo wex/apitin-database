@@ -18,10 +18,10 @@ abstract class ColumnAttribute
     const   TYPE_VIRTUAL    = 'virtual';
     
     public function __construct(
-        public string $name,
         public string $type = self::TYPE_STRING,
         public bool $required = false,
-        public mixed $default = null
+        public mixed $default = null,
+        public ?string $alias = null
     )
     {
         

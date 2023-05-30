@@ -46,13 +46,16 @@ abstract class Record
 
     public function __construct(array $kvp = [])
     {
-        foreach (static::describe() as $k => $meta) {
-            $this->store[$k] = $meta->default;
-            unset( $this->{$k} );
+        $aliasMap = [];
+
+        foreach (static::describe() as $fieldName => $fieldMeta) {
+            if ($fieldMeta->alias) $aliasMap[ $fieldMeta->alias ] = $fieldName;
+            $this->store[$fieldName] = $fieldMeta->default;
+            unset( $this->{$fieldName} );
         }
 
         foreach ($kvp as $k => $v) {
-            $this->store[$k] = $v;
+            $this->store[$aliasMap[$k] ?? $k] = $v;
         }
 
         foreach (static::onLoad() as $callback) {
@@ -194,9 +197,9 @@ abstract class Record
         if ($this->$primaryKey) {
 
             $data = [];
-            foreach (static::describe() as $field) {
-                if (!array_key_exists($field->name, $this->dirty)) continue;
-                $data[$field->name] = $this->store[$field->name] ?? $field->default;
+            foreach (static::describe() as $name => $field) {
+                if (!array_key_exists($name, $this->dirty)) continue;
+                $data[$field->alias ?? $name] = $this->store[$name] ?? $field->default;
             }
 
             if (!$data) return $this;
@@ -214,8 +217,8 @@ abstract class Record
         } else {
 
             $data = [];
-            foreach (static::describe() as $field) {
-                $data[$field->name] = $this->store[$field->name] ?? $field->default;
+            foreach (static::describe() as $name => $field) {
+                $data[$field->alias ?? $name] = $this->store[$name] ?? $field->default;
             }
 
             if (!$data) return $this;

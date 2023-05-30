@@ -28,8 +28,12 @@ class Bar extends Record
 #[Table("foo", timeStamps: true, softDelete: true)]
 class Foo extends Record
 {
-    #[Column("name")]
-    protected $name;
+    #[Column]
+    protected ?string $name;
+
+    #[Column(alias: "private_key")]
+    protected ?string $privateKey;
+
 /*
     #[Relation("bar_id", Bar::class)]
     protected $bar;
@@ -42,16 +46,17 @@ class Foo extends Record
 */
 }
 
-$t = new Foo;
-$t->name = "Foobar";
-var_dump( $t->save() );
+#$foo = Foo::load(6);
+$foo = new Foo(['private_key' => 'fofofo']);
 
-print_r( $t );
+$foo->name = "Foobar";
+$foo->privateKey = 'asdf==';
+
+print_r( $foo );
+
+$foo->save();
 
 exit;
-
-#$bar = Bar::load(1);
-$foo = Foo::load(6);
 
 #$foo->name = sprintf('%s %s', 'Foo Bar', microtime(true));
 #$foo->save();

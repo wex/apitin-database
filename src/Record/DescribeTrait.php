@@ -70,7 +70,7 @@ trait DescribeTrait
             /**
              * Primary Key
              */
-            $columns[$primaryKey] = new Column($primaryKey, Column::TYPE_INTEGER, false, null);
+            $columns[$primaryKey] = new Column(Column::TYPE_INTEGER, false, null);
 
             /**
              * Other fields
@@ -78,28 +78,30 @@ trait DescribeTrait
             foreach ($refClass->getProperties(ReflectionProperty::IS_PROTECTED) as $refProp) {
                 foreach ($refProp->getAttributes(ColumnAttribute::class, ReflectionAttribute::IS_INSTANCEOF) as $propAttr) {
                     $attr = $propAttr->newInstance();
+
+                    $fieldName = $refProp->getName();
                     
                     switch ($attr::class) {
 
                         case Column::class:
-                            $columns[ $attr->name ] = $attr;
-                            $attr->bind($attr, $refProp->getName(), static::class);
+                            $columns[ $fieldName ] = $attr;
+                            $attr->bind($attr, $fieldName, static::class);
                             break;
 
                         case Relation::class:
-                            $columns[ $attr->name ] = new Column($attr->name, Column::TYPE_FOREIGNKEY);
-                            $columns[ $refProp->getName() ] = new Column($attr->name, Column::TYPE_VIRTUAL);
-                            $attr->bind($attr, $refProp->getName(), static::class);
+                            $columns[ $fieldName ] = new Column(Column::TYPE_FOREIGNKEY);
+                            $columns[ $fieldName ] = new Column(Column::TYPE_VIRTUAL);
+                            $attr->bind($attr, $fieldName, static::class);
                             break;
 
                         case Collection::class:
-                            $columns[ $refProp->getName() ] = new Column($refProp->getName(), Column::TYPE_VIRTUAL); 
-                            $attr->bind($attr, $refProp->getName(), static::class);
+                            $columns[ $fieldName ] = new Column(Column::TYPE_VIRTUAL); 
+                            $attr->bind($attr, $fieldName, static::class);
                             break;
 
                         case Store::class:
-                            $columns[ $refProp->getName() ] = new Column($refProp->getName(), Column::TYPE_TEXT);
-                            $attr->bind($attr, $refProp->getName(), static::class);
+                            $columns[ $fieldName ] = new Column(Column::TYPE_TEXT);
+                            $attr->bind($attr, $fieldName, static::class);
                             break;
 
                         default:
