@@ -2,12 +2,28 @@
 
 namespace Apitin\Database;
 
+use Apitin\DI;
 use LengthException;
 use LogicException;
 use PDO;
 
-class Database extends PDO
+use function Apitin\config;
+
+class Database extends PDO implements DI
 {
+    public static function factory(): self
+    {
+        return new static(
+            sprintf('mysql:host=%s;port=%d;dbname=%s;charset=utf8',
+                config('DATABASE_HOSTNAME', 'localhost'),
+                config('DATABASE_PORT', 3306),
+                config('DATABASE_DATABASE', ''),
+            ),
+            config('DATABASE_USERNAME', ''),
+            config('DATABASE_PASSWORD', '')
+        );
+    }
+
     public function one($sql, ...$parameters)
     {
         $result = null;

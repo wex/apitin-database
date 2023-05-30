@@ -4,8 +4,52 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5f509f34e14920cdf60677573e47660c",
-    "packages": [],
+    "content-hash": "dfc73c68a20c0c98bee577a8f339b175",
+    "packages": [
+        {
+            "name": "apitin/framework",
+            "version": "v1.4.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/wex/apitin-framework.git",
+                "reference": "cbaa9af0221698d9834c45947159d07dbd1b0119"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/wex/apitin-framework/zipball/cbaa9af0221698d9834c45947159d07dbd1b0119",
+                "reference": "cbaa9af0221698d9834c45947159d07dbd1b0119",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.0.0"
+            },
+            "type": "package",
+            "autoload": {
+                "files": [
+                    "src/functions.inc.php"
+                ],
+                "psr-4": {
+                    "Apitin\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Niko Hujanen",
+                    "email": "niko.hujanen@gmail.com"
+                }
+            ],
+            "description": "Ultra light-weight API framework",
+            "support": {
+                "issues": "https://github.com/wex/apitin-framework/issues",
+                "source": "https://github.com/wex/apitin-framework/tree/v1.4.3"
+            },
+            "time": "2022-05-26T03:15:37+00:00"
+        }
+    ],
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
