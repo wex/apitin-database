@@ -275,12 +275,10 @@ abstract class Record
     /**
      * @return true|Validator 
      */
-    public function validate(array $skip = []): Validator|bool
+    public function validate(array $skip = []): array|bool
     {
         $validator = new Validator($this);
 
-        if ($validator->validate($skip)) return true;
-
-        return $validator;
+        return $validator->validate($skip);
     }
 }

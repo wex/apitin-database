@@ -2,19 +2,25 @@
 
 namespace Apitin\Database\Record;;
 
+use Apitin\Database\Database;
 use Apitin\Database\Record;
 use Apitin\Database\Record\Column;
+use Apitin\Database\Select\Quote;
+use DateTimeImmutable;
+use Exception;
 
 class Validator
 {
     const   ERR_INVALID_TYPE    = 'error.invalid_type';
     const   ERR_REQUIRED        = 'error.required';
+    const   ERR_UNIQUE          = 'error.unique';
 
     const   ERR_TOO_SHORT       = 'error.too_short';
     const   ERR_TOO_LONG        = 'error.too_long';
     const   ERR_TOO_SMALL       = 'error.too_small';
     const   ERR_TOO_BIG         = 'error.too_big';
 
+    protected string $record;
     protected array $meta;
     protected array $data;
 
@@ -23,6 +29,7 @@ class Validator
         $recordClass = $record::class;
 
         $this->meta = $recordClass::describe();
+        $this->record = $recordClass;
 
         foreach ($this->meta as $fieldName => $fieldMeta) {
             $this->data[ $fieldName ] = $fieldMeta->from($record->$fieldName);
@@ -31,7 +38,8 @@ class Validator
 
     public function validate(array $skip = [])
     {
-        $result = [];
+        $recordClass    = $this->record;
+        $result         = [];
 
         foreach ($this->meta as $fieldName => $fieldMeta) {
             if (in_array($fieldName, $skip)) continue;
@@ -68,6 +76,16 @@ class Validator
                     $fieldMaxValue  = 1;
                     break;
 
+                case Column::TYPE_DATE:
+                    $fieldMinValue  = is_null($fieldMeta->min) ? null : (new DateTimeImmutable($fieldMeta->min))->setTime(0, 0, 0);
+                    $fieldMaxValue  = is_null($fieldMeta->max) ? null : (new DateTimeImmutable($fieldMeta->max))->setTime(0, 0, 0);
+                    break;
+
+                case Column::TYPE_DATETIME:
+                    $fieldMinValue  = is_null($fieldMeta->min) ? null : new DateTimeImmutable($fieldMeta->min);
+                    $fieldMaxValue  = is_null($fieldMeta->max) ? null : new DateTimeImmutable($fieldMeta->max);
+                    break;
+
                 default:
                     $fieldResult[] = static::ERR_INVALID_TYPE;
                     break;
@@ -81,10 +99,25 @@ class Validator
             if ($fieldMinValue && !$fieldEmpty && $fieldValue < $fieldMinValue) $fieldResult[] = static::ERR_TOO_SMALL;
             if ($fieldMaxValue && !$fieldEmpty && $fieldValue > $fieldMaxValue) $fieldResult[] = static::ERR_TOO_BIG;
 
-            if ($fieldResult) $result[ $fieldName ] = $fieldResult;
+            if ($fieldUnique && !$fieldEmpty) {
+                $quoter     = new Quote;
+                $primaryKey = $recordClass::getPrimaryKey();
+
+                try {
+                    $existing   = $recordClass::select()
+                                            ->where(sprintf('%s = ?', $quoter->quoteIdentifier($fieldName)), $fieldValue)
+                                            ->where(sprintf('%s != ?', $quoter->quoteIdentifier($primaryKey)), $this->data[$primaryKey] ?? 0)
+                                            ->first();
+
+                    if ($existing->id) $fieldResult[] = static::ERR_UNIQUE;
+
+                } catch (Exception $e) {}
+            }
+
+            if (count($fieldResult)) $result[ $fieldName ] = $fieldResult;
         }
 
-        if (!$result) return true;
+        if (!count($result)) return true;
 
         return $result;
     }
