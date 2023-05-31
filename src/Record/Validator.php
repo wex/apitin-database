@@ -13,7 +13,7 @@ class Validator
 {
     const   ERR_INVALID_TYPE    = 'error.invalid_type';
     const   ERR_REQUIRED        = 'error.required';
-    const   ERR_UNIQUE          = 'error.unique';
+    const   ERR_UNIQUE          = 'error.not_unique';
 
     const   ERR_TOO_SHORT       = 'error.too_short';
     const   ERR_TOO_LONG        = 'error.too_long';
