@@ -39,6 +39,19 @@ class Database extends PDO implements DI
         return $result;
     }
 
+    public function oneOrEmpty($sql, ...$parameters)
+    {
+        try {
+
+            return $this->one($sql, ...$parameters);
+
+        } catch (LengthException $e) {
+
+            return null;
+
+        }
+    }
+
     public function first($sql, ...$parameters): array
     {
         $result = [];
@@ -53,6 +66,19 @@ class Database extends PDO implements DI
         $smt->closeCursor();
 
         return $result;
+    }
+
+    public function firstOrEmpty($sql, ...$parameters)
+    {
+        try {
+
+            return $this->first($sql, ...$parameters);
+
+        } catch (LengthException $e) {
+
+            return null;
+
+        }
     }
 
     public function all($sql, ...$parameters): array
@@ -70,6 +96,19 @@ class Database extends PDO implements DI
         }
 
         return $result;
+    }
+
+    public function allOrEmpty($sql, ...$parameters)
+    {
+        try {
+
+            return $this->all($sql, ...$parameters);
+
+        } catch (LengthException $e) {
+
+            return [];
+
+        }
     }
 
     public function insert($table, array $data = [])
@@ -133,5 +172,40 @@ class Database extends PDO implements DI
         );
 
         return $this->exec($sql);
+    }
+
+    public function insertOrUpdate($table, array $data = [])
+    {
+        $sql = sprintf(
+            'INSERT INTO `%s` (%s) VALUES (%s) ON DUPLICATE KEY UPDATE %s',
+            str_replace('`', '``', "{$table}"),
+            implode(', ', array_map(function($t) { return sprintf('`%s`', str_replace('`', '``', "{$t}"));  }, array_keys($data))),
+            implode(', ', array_map(function($t) { return is_null($t) ? 'NULL' : $this->quote("{$t}"); }, array_values($data))),
+            implode(', ', array_map(function($v, $k) { return sprintf('`%s` = %s', str_replace('`', '``', "{$k}"), is_null($v) ? 'NULL' : $this->quote("{$v}")); }, $data, array_keys($data))),
+        );
+
+        return $this->exec($sql);
+    }
+
+    public function updateOrInsert($table, array $data = [], $pk = 'id')
+    {
+        $dataPk = $data[$pk] ?? 0;
+        $pkValue = $this->oneOrEmpty(sprintf(
+            'SELECT `id` FROM `%s` WHERE `%s` = %s',
+            str_replace('`', '``', "{$table}"),
+            str_replace('`', '``', "{$pk}"),
+            $this->quote("{$dataPk}")
+        ));
+
+        if ($pkValue) {
+
+            $this->update($table, $data, ['id' => $pkValue]);
+            return $pkValue;
+
+        } else {
+
+            return $this->insert($table, $data);
+
+        }
     }
 }
