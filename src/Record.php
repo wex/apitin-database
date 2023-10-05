@@ -205,6 +205,8 @@ abstract class Record
 
     /**
      * @return static
+     * 
+     * @todo FIXME : Collections are not saved at all (aka huutista)
      */
     public function save()
     {

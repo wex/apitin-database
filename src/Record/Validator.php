@@ -43,11 +43,12 @@ class Validator
 
         foreach ($this->meta as $fieldName => $fieldMeta) {
             if (in_array($fieldName, $skip)) continue;
+            if ($fieldMeta->type === Column::TYPE_VIRTUAL) continue;
 
             $fieldResult    = [];
             $fieldValue     = $this->data[ $fieldName ];
-            $fieldEmpty     = is_null($fieldValue) || !strlen($fieldValue);
-            $fieldLength    = $fieldEmpty ? 0 : strlen($fieldValue);
+            $fieldEmpty     = is_null($fieldValue) || !strlen("{$fieldValue}");
+            $fieldLength    = $fieldEmpty ? 0 : strlen("{$fieldValue}");
 
             $fieldMinLen = $fieldMaxLen = $fieldMinValue = $fieldMaxValue = null;
 

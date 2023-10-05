@@ -34,7 +34,7 @@ class Collection extends ColumnAttribute
 
         $instance::onLoad(function($instance) use ($property, $relatedClass, $relatedTable, $relatedKey, $localPK, $collectionType) {
             $select = $relatedClass::select();
-            $select->where("{$relatedTable}.{$relatedKey} = ?", $instance->$localPK);
+            $select->where("{$relatedTable}.{$relatedKey} = ?", $instance->$localPK ?: 0);
 
             switch ($collectionType) {
                 case Collection::TYPE_FIXED:
