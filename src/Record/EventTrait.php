@@ -28,6 +28,17 @@ trait EventTrait
         }
     }
 
+    public static function onChange(callable $callback = null)
+    {
+        $cacheKey = sprintf("%s.change", static::class);
+
+        if (is_null($callback)) {
+            return static::$events[$cacheKey] ?? [];
+        } else {
+            static::$events[$cacheKey][] = $callback;
+        }
+    }
+
     public static function onSet(string $key, callable $callback = null)
     {
         $cacheKey = sprintf("%s.set.%s", static::class, $key);
@@ -52,7 +63,18 @@ trait EventTrait
 
     public static function onSave(callable $callback = null)
     {
-        $cacheKey = sprintf("%s.save", static::class);
+        $cacheKey = sprintf("%s.save.before", static::class);
+
+        if (is_null($callback)) {
+            return static::$events[$cacheKey] ?? [];
+        } else {
+            static::$events[$cacheKey][] = $callback;
+        }
+    }
+
+    public static function afterSave(callable $callback = null)
+    {
+        $cacheKey = sprintf("%s.save.after", static::class);
 
         if (is_null($callback)) {
             return static::$events[$cacheKey] ?? [];

@@ -2,6 +2,7 @@
 
 namespace Apitin\Database;
 
+use Apitin\Database\Record\Column;
 use Apitin\Database\Record\DescribeTrait;
 use Apitin\Database\Record\EventTrait;
 use Apitin\Database\Record\Select;
@@ -87,6 +88,10 @@ abstract class Record
         $this->store[$key] = isset($fields[$key]) ?
             $fields[$key]->to($value) :
             $value;
+
+        foreach (static::onChange() as $callback) {
+            Closure::fromCallable($callback)->call($this, $this, $key, $value);
+        }
     }
 
     public function __get(string $key): mixed
@@ -207,10 +212,11 @@ abstract class Record
      * @return static
      * 
      * @todo FIXME : Collections are not saved at all (aka huutista)
+     * @todo FIXME : hasChanged() is a mess
      */
     public function save()
     {
-        if (!$this->hasChanged()) return $this;
+        //if (!$this->hasChanged()) return $this;
 
         foreach (static::onSave() as $callback) {
             Closure::fromCallable($callback)->call($this, $this);
@@ -222,28 +228,28 @@ abstract class Record
 
             $data = [];
             foreach (static::describe() as $name => $field) {
-                if ($field->readonly) continue;
+                if (in_array($field->type, [Column::TYPE_VIRTUAL])) continue;
                 if (!array_key_exists($name, $this->dirty)) continue;
                 $data[$field->alias ?? $name] = $this->store[$name] ?: $field->to($field->default);
             }
-
-            if (!$data) return $this;
 
             if (static::hasTimestamps()) {
                 $data['updated_at'] = date('Y-m-d H:i:s');
             }
 
-            static::$db->update(
-                $this->getTable(),
-                $data,
-                [$primaryKey => $this->$primaryKey]
-            );
+            if (count($data)) {
+                static::$db->update(
+                    $this->getTable(),
+                    $data,
+                    [$primaryKey => $this->$primaryKey]
+                );
+            }
 
         } else {
 
             $data = [];
             foreach (static::describe() as $name => $field) {
-                if ($field->readonly) continue;
+                if (in_array($field->type, [Column::TYPE_VIRTUAL])) continue;
                 $data[$field->alias ?? $name] = $this->store[$name] ?: $field->to($field->default);
             }
 
@@ -253,11 +259,17 @@ abstract class Record
                 $data['created_at'] = date('Y-m-d H:i:s');
             }
 
-            $this->$primaryKey = static::$db->insert(
-                $this->getTable(),
-                $data
-            );
+            if (count($data)) {
+                $this->$primaryKey = static::$db->insert(
+                    $this->getTable(),
+                    $data
+                );
+            }
 
+        }
+
+        foreach (static::afterSave() as $callback) {
+            Closure::fromCallable($callback)->call($this, $this);
         }
 
         return $this->reload();

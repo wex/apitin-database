@@ -8,6 +8,7 @@ use Apitin\Database\LazyCollection;
 use Attribute;
 use BadMethodCallException;
 use LogicException;
+use RuntimeException;
 
 #[Attribute(Attribute::TARGET_PROPERTY | Attribute::IS_REPEATABLE)]
 class Collection extends ColumnAttribute
@@ -38,11 +39,18 @@ class Collection extends ColumnAttribute
 
             switch ($collectionType) {
                 case Collection::TYPE_FIXED:
-                    $instance->store[$property] = new FixedCollection($instance, $property, $select);
+                    $instance->store[$property] = new FixedCollection($instance, $property, $select, $relatedClass);
+
+                    $instance::afterSave(function($instance) use ($property, $relatedKey, $localPK) {
+                        $instance->store[$property]->save([$relatedKey => $instance->$localPK]);
+                    });
                     break;
 
                 case Collection::TYPE_LAZY:
-                    $instance->store[$property] = new LazyCollection($instance, $property, $select);
+                    $instance->store[$property] = new LazyCollection($instance, $property, $select, $relatedClass);
+                    $instance::afterSave(function($instance) use ($property) {
+                        throw new RuntimeException('TODO');
+                    });
                     break;
 
                 default:
