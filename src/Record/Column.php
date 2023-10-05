@@ -35,7 +35,7 @@ class Column extends ColumnAttribute
             static::TYPE_TEXT       => is_null($value) ? null : $value,
             static::TYPE_INTEGER    => is_null($value) ? null : intval($value),
             static::TYPE_DECIMAL    => is_null($value) ? null : floatval($value),
-            static::TYPE_BOOLEAN    => is_null($value) ? null : (bool) $value,
+            static::TYPE_BOOLEAN    => is_null($value) ? null : (int) $value,
             static::TYPE_DATETIME   => is_null($value) ? null : $value->format('Y-m-d H:i:s'),
             static::TYPE_DATE       => is_null($value) ? null : $value->format('Y-m-d'),
             static::TYPE_FOREIGNKEY => is_null($value) ? null : intval($value),

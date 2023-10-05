@@ -189,6 +189,7 @@ abstract class Record
         $instance = static::load(intval($this->$primaryKey));
 
         $this->store = $instance->store;
+        $this->dirty = [];
 
         return $this;
     }
@@ -210,8 +211,9 @@ abstract class Record
 
             $data = [];
             foreach (static::describe() as $name => $field) {
+                if ($field->readonly) continue;
                 if (!array_key_exists($name, $this->dirty)) continue;
-                $data[$field->alias ?? $name] = $this->store[$name] ?? $field->default;
+                $data[$field->alias ?? $name] = $this->store[$name] ?: $field->to($field->default);
             }
 
             if (!$data) return $this;
@@ -230,7 +232,8 @@ abstract class Record
 
             $data = [];
             foreach (static::describe() as $name => $field) {
-                $data[$field->alias ?? $name] = $this->store[$name] ?? $field->default;
+                if ($field->readonly) continue;
+                $data[$field->alias ?? $name] = $this->store[$name] ?: $field->to($field->default);
             }
 
             if (!$data) return $this;
