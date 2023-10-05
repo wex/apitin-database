@@ -126,9 +126,18 @@ abstract class Record
 
     public function toArray(?array $keys = null): array
     {
-        return is_null($keys) ?
-            array_filter($this->store) :
+        $fields = static::describe();
+        $values = is_null($keys) ?
+            $this->store :
             array_intersect_key($this->store, $keys);
+        
+        array_walk($values, function(&$v, $k) use ($fields) {
+            if (isset($fields[$k])) {
+                $v = $fields[$k]->from($v);
+            }
+        });
+
+        return $values;
     }
 
     public static function create(array $data = []): static

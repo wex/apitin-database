@@ -73,6 +73,21 @@ trait DescribeTrait
             $columns[$primaryKey] = new Column(Column::TYPE_INTEGER, false, null);
 
             /**
+             * Timestamps
+             */
+            if (static::hasTimestamps()) {
+                $columns['created_at'] = new Column(Column::TYPE_DATETIME, false, null);
+                $columns['updated_at'] = new Column(Column::TYPE_DATETIME, false, null);
+            }
+
+            /**
+             * Soft-delete
+             */
+            if (static::useSoftDelete()) {
+                $columns['deleted_at'] = new Column(Column::TYPE_DATETIME, false, null);
+            }
+
+            /**
              * Other fields
              */
             foreach ($refClass->getProperties(ReflectionProperty::IS_PROTECTED) as $refProp) {
