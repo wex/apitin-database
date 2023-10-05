@@ -104,7 +104,7 @@ class JsonStore implements ArrayAccess, Iterator, Countable
         return count($this->store);
     }
 
-    public function save()
+    public function save(array $foreignKey)
     {
         return json_encode($this->store);
     }

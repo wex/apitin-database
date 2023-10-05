@@ -8,5 +8,5 @@ use Iterator;
 
 abstract class Collection implements ArrayAccess, Iterator, Countable
 {
-    abstract public function save();
+    abstract public function save(array $foreignKey);
 }

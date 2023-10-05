@@ -2,18 +2,34 @@
 
 namespace Apitin\Database;
 
+use Exception;
+
 class FixedCollection extends Collection
 {
+    protected string $className;
     protected Record $parent;
     protected string $column;
     protected Select $source;
     protected array  $store     = [];
     protected int    $iterator  = -1;
 
-    public function __construct(Record &$parent, string $column, Select $source)
+    public function __construct(Record &$parent, string $column, Select $source, string $className)
     {
-        $this->parent   = $parent;
-        $this->source   = $source;
+        $this->parent       = $parent;
+        $this->source       = $source;
+        $this->column       = $column;
+        $this->className    = $className;
+
+        /**
+         * @todo FIXME : somekind of dirty solutions required
+         * 
+         * We need another kind of triggering system which is instance based (single-run)
+         */
+        /*
+        $className::onChange(function() use ($parent, $column) {
+            $parent->setDirty($column);
+        });
+        */
 
         $this->refresh();
     }
@@ -28,9 +44,9 @@ class FixedCollection extends Collection
         return array_key_exists($offset, $this->store);
     }
 
-    public function offsetGet(mixed $offset): mixed
+    public function &offsetGet(mixed $offset): mixed
     {
-        return $this->store[$offset] ?? null;
+        return $this->store[$offset];
     }
 
     public function offsetSet(mixed $offset, mixed $value): void
@@ -41,10 +57,11 @@ class FixedCollection extends Collection
 
     public function offsetUnset(mixed $offset): void
     {
+        throw new Exception('destroy?');
         unset( $this->store[$offset] );
     }
 
-    public function current(): mixed
+    public function &current(): mixed
     {
         return $this->store[$this->iterator];
     }
@@ -74,8 +91,15 @@ class FixedCollection extends Collection
         return count($this->store);
     }
 
-    public function save()
+    public function save(array $foreignKeys)
     {
-        die('todo');
+        foreach ($this->store as &$item) {
+            foreach ($foreignKeys as $foreignKey => $foreignValue) {
+                $item->$foreignKey = $foreignValue;
+            }
+            $item->save();
+        }
+
+        $this->refresh();
     }
 }

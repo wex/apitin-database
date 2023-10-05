@@ -99,7 +99,7 @@ class LazyCollection extends Collection
         return count($this->store);
     }
 
-    public function save()
+    public function save(array $foreignKey)
     {
         throw new LogicException('NOT IMPLEMENTED YET');
         die('todo');
