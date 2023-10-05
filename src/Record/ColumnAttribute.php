@@ -25,6 +25,7 @@ abstract class ColumnAttribute
         public ?string $alias = null,
         public mixed $min = null,
         public mixed $max = null,
+        public bool $readonly = false,
     )
     {
         

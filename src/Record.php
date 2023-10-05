@@ -77,6 +77,8 @@ abstract class Record
     {
         $fields     = static::describe();
 
+        if (isset($fields[$key]) && $fields[$key]->readonly) return;
+
         foreach (static::onSet($key) as $callback) {
             $value = Closure::fromCallable($callback)->call($this, $this, $value);
         }
