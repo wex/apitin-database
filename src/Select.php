@@ -4,9 +4,11 @@ namespace Apitin\Database;
 
 use Apitin\Database\Select\Expression;
 use Apitin\Database\Select\From;
+use Apitin\Database\Select\Group;
 use Apitin\Database\Select\Having;
 use Apitin\Database\Select\Join;
 use Apitin\Database\Select\Limit;
+use Apitin\Database\Select\Order;
 use Apitin\Database\Select\Part;
 use Apitin\Database\Select\Where;
 use Closure;
@@ -167,6 +169,20 @@ class Select
         }
 
         $this->parts[] = new Limit($count, $offset);
+
+        return $this;
+    }
+
+    public function order(string $expression): static
+    {
+        $this->parts[] = new Order($expression);
+
+        return $this;
+    }
+
+    public function group(string $expression): static
+    {
+        $this->parts[] = new Group($expression);
 
         return $this;
     }

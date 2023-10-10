@@ -2,6 +2,7 @@
 
 namespace Apitin\Database\Record;
 
+use Apitin\Database\Record;
 use Apitin\Database\Select as DatabaseSelect;
 use PDOException;
 use LengthException;
@@ -27,7 +28,7 @@ class Select extends DatabaseSelect
     }
 
     /**
-     * @return stdClass|$returnAs
+     * @return Record
      */
     public function first()
     {
@@ -37,7 +38,7 @@ class Select extends DatabaseSelect
     }
 
     /**
-     * @return array 
+     * @return array[]
      */
     public function allAsArray()
     {
@@ -45,7 +46,7 @@ class Select extends DatabaseSelect
     }
 
     /**
-     * @return stdClass[]|$returnAs[]
+     * @return Record[]
      */
     public function all()
     {

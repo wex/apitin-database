@@ -2,16 +2,15 @@
 
 namespace Apitin\Database\Select;
 
-class Order extends Part
+class Group extends Part
 {
     public function __construct(protected string $expression)
     {
         
     }
 
-    public function toOrder(): string
+    public function toGroup(): string
     {
         return $this->expression;
     }
-
 }
