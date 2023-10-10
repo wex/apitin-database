@@ -126,7 +126,11 @@ abstract class Record
 
     public function hasChanged(): bool
     {
-        return !!count($this->dirty);
+        if (count($this->dirty)) return true;
+        
+        // Iterate thru relations, if any changed -> true
+
+        return false;
     }
 
     public function toArray(?array $keys = null): array

@@ -20,17 +20,6 @@ class FixedCollection extends Collection
         $this->column       = $column;
         $this->className    = $className;
 
-        /**
-         * @todo FIXME : somekind of dirty solutions required
-         * 
-         * We need another kind of triggering system which is instance based (single-run)
-         */
-        /*
-        $className::onChange(function() use ($parent, $column) {
-            $parent->setDirty($column);
-        });
-        */
-
         $this->refresh();
     }
 
