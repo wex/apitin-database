@@ -74,6 +74,17 @@ abstract class Record
         }
     }
 
+    public function __wakeup()
+    {
+        foreach (static::describe() as $fieldName => $fieldMeta) {
+            unset( $this->{$fieldName} );
+        }
+
+        if (static::onBoot()) {
+            static::boot();
+        }
+    }
+
     public function __set(string $key, $value): void
     {
         $fields     = static::describe();
