@@ -16,6 +16,8 @@ abstract class ColumnAttribute
     const   TYPE_TEXT       = 'mediumtext';
     const   TYPE_FOREIGNKEY = 'foreign_key';
     const   TYPE_VIRTUAL    = 'virtual';
+
+    const   TYPE_HASMANY    = 'one2many';
     
     public function __construct(
         public string $type = self::TYPE_STRING,

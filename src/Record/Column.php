@@ -21,6 +21,7 @@ class Column extends ColumnAttribute
             static::TYPE_DATE       => is_null($value) ? null : new DateTimeImmutable($value),
             static::TYPE_FOREIGNKEY => is_null($value) ? null : intval($value),
             static::TYPE_VIRTUAL    => $value,
+            static::TYPE_HASMANY    => $value,
             default => throw new BadMethodCallException(sprintf(
                 "Type '%s' is not supported",
                 $this->type
@@ -40,6 +41,7 @@ class Column extends ColumnAttribute
             static::TYPE_DATE       => is_null($value) ? null : $value->format('Y-m-d'),
             static::TYPE_FOREIGNKEY => is_null($value) ? null : intval($value),
             static::TYPE_VIRTUAL    => $value,
+            static::TYPE_HASMANY    => $value,
             default => throw new BadMethodCallException(sprintf(
                 "Type '%s' is not supported",
                 $this->type

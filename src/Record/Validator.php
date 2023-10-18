@@ -6,6 +6,7 @@ use Apitin\Database\Database;
 use Apitin\Database\Record;
 use Apitin\Database\Record\Column;
 use Apitin\Database\Select\Quote;
+use Closure;
 use DateTimeImmutable;
 use Exception;
 
@@ -20,6 +21,7 @@ class Validator
     const   ERR_TOO_SMALL       = 'error.too_small';
     const   ERR_TOO_BIG         = 'error.too_big';
 
+    protected Record $class;
     protected string $record;
     protected array $meta;
     protected array $data;
@@ -28,8 +30,9 @@ class Validator
     {
         $recordClass = $record::class;
 
-        $this->meta = $recordClass::describe();
-        $this->record = $recordClass;
+        $this->class    = $record;
+        $this->meta     = $recordClass::describe();
+        $this->record   = $recordClass;
 
         foreach ($this->meta as $fieldName => $fieldMeta) {
             $this->data[ $fieldName ] = $fieldMeta->from($record->$fieldName);
@@ -43,6 +46,15 @@ class Validator
 
         foreach ($this->meta as $fieldName => $fieldMeta) {
             if (in_array($fieldName, $skip)) continue;
+
+            foreach ($recordClass::onValidate($fieldName) as $callback) {
+                $fieldResult = Closure::fromCallable($callback)->call($this->class, $this->class, $this->class->$fieldName);
+                if (is_array($fieldResult) && count($fieldResult)) {
+                    $result[ $fieldName ] = $fieldResult;
+                }
+            }
+
+            if (in_array($fieldMeta->type, [Column::TYPE_HASMANY])) continue;
             if ($fieldMeta->type === Column::TYPE_VIRTUAL) continue;
 
             $fieldResult    = [];

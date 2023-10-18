@@ -50,6 +50,17 @@ trait EventTrait
         }
     }
 
+    public static function onValidate(string $key, callable $callback = null)
+    {
+        $cacheKey = sprintf("%s.validate.%s", static::class, $key);
+
+        if (is_null($callback)) {
+            return static::$events[$cacheKey] ?? [];
+        } else {
+            static::$events[$cacheKey][] = $callback;
+        }
+    }
+
     public static function onLoad(callable $callback = null)
     {
         $cacheKey = sprintf("%s.load", static::class);

@@ -56,9 +56,13 @@ abstract class Record
         $aliasMap = [];
 
         foreach (static::describe() as $fieldName => $fieldMeta) {
-            if ($fieldMeta->alias) $aliasMap[ $fieldMeta->alias ] = $fieldName;
-            $this->store[$fieldName] = $fieldMeta->default;
-            unset( $this->{$fieldName} );
+            if (in_array($fieldMeta->type, [Column::TYPE_HASMANY])) {
+                $this->{$fieldName} = [];
+            } else {
+                if ($fieldMeta->alias) $aliasMap[ $fieldMeta->alias ] = $fieldName;
+                $this->store[$fieldName] = $fieldMeta->default;
+                unset( $this->{$fieldName} );
+            }
         }
 
         foreach ($kvp as $k => $v) {
@@ -77,6 +81,7 @@ abstract class Record
     public function __wakeup()
     {
         foreach (static::describe() as $fieldName => $fieldMeta) {
+            if (in_array($fieldMeta->type, [Column::TYPE_HASMANY])) continue;
             unset( $this->{$fieldName} );
         }
 
@@ -243,6 +248,7 @@ abstract class Record
 
             $data = [];
             foreach (static::describe() as $name => $field) {
+                if (in_array($field->type, [Column::TYPE_HASMANY])) continue;
                 if (in_array($field->type, [Column::TYPE_VIRTUAL])) continue;
                 if (!array_key_exists($name, $this->dirty)) continue;
                 $data[$field->alias ?? $name] = $this->store[$name] ?: $field->to($field->default);
@@ -264,6 +270,7 @@ abstract class Record
 
             $data = [];
             foreach (static::describe() as $name => $field) {
+                if (in_array($field->type, [Column::TYPE_HASMANY])) continue;
                 if (in_array($field->type, [Column::TYPE_VIRTUAL])) continue;
                 $data[$field->alias ?? $name] = $this->store[$name] ?: $field->to($field->default);
             }

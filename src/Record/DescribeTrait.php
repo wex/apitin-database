@@ -90,7 +90,7 @@ trait DescribeTrait
             /**
              * Other fields
              */
-            foreach ($refClass->getProperties(ReflectionProperty::IS_PROTECTED) as $refProp) {
+            foreach ($refClass->getProperties(ReflectionProperty::IS_PROTECTED | ReflectionProperty::IS_PUBLIC) as $refProp) {
                 foreach ($refProp->getAttributes(ColumnAttribute::class, ReflectionAttribute::IS_INSTANCEOF) as $propAttr) {
                     $attr = $propAttr->newInstance();
 
@@ -100,6 +100,11 @@ trait DescribeTrait
 
                         case Column::class:
                             $columns[ $fieldName ] = $attr;
+                            $attr->bind($attr, $fieldName, static::class);
+                            break;
+
+                        case HasMany::class:
+                            $columns[ $fieldName ] = new Column(Column::TYPE_HASMANY);
                             $attr->bind($attr, $fieldName, static::class);
                             break;
 
