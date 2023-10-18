@@ -68,8 +68,6 @@ class HasMany extends ColumnAttribute
             foreach ($instance->$property as $t) {
                 $key = $t::getPrimaryKey();
                 $existingKeys[] = $t->$key;
-                $t->$fkName = $instance->$pkName;
-                $t->save();
             }
 
             $db->exec(sprintf('DELETE FROM `%s` WHERE `%s` = %s AND `%s` NOT IN (%s)',
@@ -79,6 +77,12 @@ class HasMany extends ColumnAttribute
                 str_replace('`', '``', "{$fKey}"),
                 implode(',', array_map(function($v) use ($db) { return $db->quote("{$v}"); }, $existingKeys))
             ));
+
+            foreach ($instance->$property as $t) {
+                $t->$fkName = $instance->$pkName;
+                $t->save();
+            }
+
         });
     }
 }
