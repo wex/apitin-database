@@ -2,6 +2,7 @@
 
 namespace Apitin\Database\Record;
 
+use Apitin\Database\Database;
 use Attribute;
 
 #[Attribute(Attribute::TARGET_PROPERTY | Attribute::IS_REPEATABLE)]
@@ -53,16 +54,31 @@ class HasMany extends ColumnAttribute
         });
 
         $instance::afterSave(function($instance) use ($property, $column) {
+            $class  = $column->record;
+            $db     = Database::factory();
             $pkName = $instance::getPrimaryKey();
             $fkName = $column->foreignKey;
+            $fKey   = $class::getPrimaryKey();
             
             if (!is_array($instance->$property)) return;
             if (!$instance->$pkName) return;
 
+            $existingKeys = [0];
+
             foreach ($instance->$property as $t) {
+                $key = $t::getPrimaryKey();
+                $existingKeys[] = $t->$key;
                 $t->$fkName = $instance->$pkName;
                 $t->save();
             }
+
+            $db->exec(sprintf('DELETE FROM `%s` WHERE `%s` = %s AND `%s` NOT IN (%s)',
+                str_replace('`', '``', "{$class::getTable()}"),
+                str_replace('`', '``', "{$fkName}"),
+                $db->quote("{$instance->$pkName}"),
+                str_replace('`', '``', "{$fKey}"),
+                implode(',', array_map(function($v) use ($db) { return $db->quote("{$v}"); }, $existingKeys))
+            ));
         });
     }
 }
