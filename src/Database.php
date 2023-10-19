@@ -134,9 +134,10 @@ class Database extends PDO implements DI
     public function update($table, array $data = [], array $where = [])
     {
         $sql = sprintf(
-            'UPDATE `%s` SET %s WHERE %s',
+            'UPDATE `%s` SET %s %s %s',
             str_replace('`', '``', "{$table}"),
             implode(', ', array_map(function($v, $k) { return sprintf('`%s` = %s', str_replace('`', '``', "{$k}"), is_null($v) ? 'NULL' : $this->quote("{$v}")); }, $data, array_keys($data))),
+            count($where) ? 'WHERE' : '',
             implode(' AND ', array_map(function($v, $k) { return sprintf('`%s` = %s', str_replace('`', '``', "{$k}"), is_null($v) ? 'NULL' : $this->quote("{$v}")); }, $where, array_keys($where))),
         );
 
@@ -166,8 +167,9 @@ class Database extends PDO implements DI
     public function delete($table, array $where = [])
     {
         $sql = sprintf(
-            'DELETE FROM `%s` WHERE %s',
+            'DELETE FROM `%s` %s %s',
             str_replace('`', '``', "{$table}"),
+            count($where) ? 'WHERE' : '',
             implode(' AND ', array_map(function($v, $k) { return sprintf('`%s` = %s', str_replace('`', '``', "{$k}"), is_null($v) ? 'NULL' : $this->quote("{$v}")); }, $where, array_keys($where))),
         );
 
